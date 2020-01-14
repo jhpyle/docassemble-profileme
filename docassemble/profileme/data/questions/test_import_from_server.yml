@@ -1,0 +1,38 @@
+modules:
+  - .profile
+---
+objects:
+  - client: Individual
+  - household: DAList.using(object_type=Individual)
+  - profile: Profile
+  - export_file: DAFile
+---
+mandatory: True
+code: |
+  profile.import_from_server()
+  profile.populate(client, household)
+  export_file.initialize(filename="profile.json")
+  export_file.write(profile.as_json())
+---
+mandatory: True
+question: |
+  Your profile
+subquestion: |
+  Your name is ${ client }.
+  
+  You are ${ client.age_in_years() } years old.
+  
+  % if client.is_veteran:
+  You are a veteran.
+  % else:
+  You are not a veteran.
+  % endif
+  
+  Your household:
+  
+  % for member in household:
+  * ${ member }, who is ${ member.age_in_years() } years old.
+    Relationship is ${ member.role }.
+  % endfor
+  
+  [Download](${ export_file.url_for() })
