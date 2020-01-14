@@ -1,0 +1,86 @@
+modules:
+  - .profile
+---
+objects:
+  - client: Individual
+  - household: DAList.using(object_type=Individual)
+  - profile: Profile
+  - export_file: DAFile
+---
+question: |
+  Tell me about yourself.
+fields:
+  - First name: client.name.first
+  - Middle name: client.name.middle
+    required: False
+  - Last name: client.name.last
+  - Date of birth: client.birthdate
+    datatype: date
+---
+question: |
+  Are you a veteran?
+yesno: client.is_veteran
+---
+question: |
+  Does anyone live in your household besides yourself?
+yesno: household.there_are_any
+---
+question: |
+  Tell me about the ${ ordinal(i) } member of your household
+  besides yourself.
+fields:
+  - First name: household[i].name.first
+  - Middle name: household[i].name.middle
+    required: False
+  - Last name: household[i].name.last
+  - Date of birth: household[i].birthdate
+    datatype: date
+  - Relationship to you: household[i].role
+    choices:
+      - Child
+      - Parent
+      - Roommate
+---
+question: |
+  Besides the household members you mentioned, is there
+  anyone else in the household?
+subquestion: |
+  You mentioned:
+  
+  % for member in household:
+  * ${ member }
+  % endfor
+yesno: household.there_is_another
+---
+mandatory: True
+code: |
+  client.name.first
+  client.is_veteran
+  household.gather()
+  profile.update(client, household)
+  profile.export_to_server()
+  export_file.initialize(filename="profile.json")
+  export_file.write(profile.as_json())
+---
+mandatory: True
+question: |
+  Your profile
+subquestion: |
+  Your name is ${ client }.
+  
+  You are ${ client.age_in_years() } years old.
+  
+  % if client.is_veteran:
+  You are a veteran.
+  % else:
+  You are not a veteran.
+  % endif
+  
+  Your household:
+  
+  % for member in household:
+  * ${ member }, who is ${ member.age_in_years() } years old.
+    Relationship is ${ member.role }.
+  % endfor
+  
+  [Download](${ export_file.url_for() })
