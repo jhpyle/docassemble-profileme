@@ -7,8 +7,8 @@ class Profile(DAObject):
   def init(self, *pargs, **kwargs):
     super().init(*pargs, **kwargs)
     self.initializeAttribute('store', DAStore)
-  def export_to_server(self, obj):
-    self.store.set('profileme', self.as_data(obj))
+  def export_to_server(self, obj, hh):
+    self.store.set('profileme', self.as_data(obj, hh))
   def exists_on_server(self):
     return self.store.defined('profileme')
   def import_from_server(self):
@@ -19,18 +19,17 @@ class Profile(DAObject):
     with open(file_obj.path(), 'r', encoding='utf-8') as fp:
       self.data = json.load(fp)
   def as_json(self, obj):
-    return json.dumps(self.as_data(obj))
-  def as_data(self, obj):
+    return json.dumps(self.as_data(obj, hh))
+  def as_data(self, obj, hh):
     data = self.individual_as_data(obj)
-    if hasattr(obj, 'household'):
-      data['household'] = list()
-      for item in obj.household:
-        member = self.individual_as_data(item)
-        try:
-          member['roleName'] = item.role
-        except:
-          pass
-        data['household'].append(member)
+    data['household'] = list()
+    for item in hh:
+      member = self.individual_as_data(item)
+      try:
+        member['roleName'] = item.role
+      except:
+        pass
+      data['household'].append(member)
     return data
   def individual_as_data(self, obj):
     data = {"@type": "Person"}
@@ -73,16 +72,13 @@ class Profile(DAObject):
       obj.birthdate = as_datetime(data['birthDate'])
     if 'isVeteran' in data:
       obj.is_veteran = True if data['isVeteran'] else False
-  def populate(self, obj):
+  def populate(self, obj, hh):
     self.populate_individual(obj, self.data)
     if 'household' in self.data:
-      if not hasattr(obj, 'household'):
-        obj.initializeAttribute('household', DAList)
-        obj.household.object_type = Individual
-      obj.household.clear()
+      hh.clear()
       for item in self.data['household']:
-        member = obj.household.appendObject()
+        member = hh.appendObject()
         self.populate_individual(member, item)
         if 'roleName' in item:
           member.role = item['roleName']
-      obj.household.gathered = True
+      hh.gathered = True

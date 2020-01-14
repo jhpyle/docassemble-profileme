@@ -3,6 +3,7 @@ modules:
 ---
 objects:
   - client: Individual
+  - household: DAList.using(object_type=Individual)
   - profile: Profile
 ---
 question: |
@@ -14,8 +15,8 @@ fields:
 mandatory: True
 code: |
   profile.import_from_file(profile_file)
-  profile.populate(client)
-  profile.export_to_server(client)
+  profile.populate(client, household)
+  profile.export_to_server(client, household)
 ---
 mandatory: True
 question: |
@@ -33,7 +34,7 @@ subquestion: |
   
   Your household:
   
-  % for member in client.household:
+  % for member in household:
   * ${ member }, who is ${ member.age_in_years() } years old.
     Relationship is ${ member.role }.
   % endfor
