@@ -7,8 +7,8 @@ class Profile(DAObject):
   def init(self, *pargs, **kwargs):
     super().init(*pargs, **kwargs)
     self.initializeAttribute('store', DAStore)
-  def export_to_server(self, obj, hh):
-    self.store.set('profileme', self.as_data(obj, hh))
+  def export_to_server(self):
+    self.store.set('profileme', self.as_data())
   def exists_on_server(self):
     return self.store.defined('profileme')
   def import_from_server(self):
@@ -18,19 +18,20 @@ class Profile(DAObject):
   def import_from_file(self, file_obj):
     with open(file_obj.path(), 'r', encoding='utf-8') as fp:
       self.data = json.load(fp)
-  def as_json(self, obj):
-    return json.dumps(self.as_data(obj, hh))
-  def as_data(self, obj, hh):
-    data = self.individual_as_data(obj)
-    data['household'] = list()
+  def as_json(self):
+    return json.dumps(self.as_data())
+  def as_data(self):
+    return self.data
+  def update(self, obj, hh):
+    self.data = self.individual_as_data(obj)
+    self.data['household'] = list()
     for item in hh:
       member = self.individual_as_data(item)
       try:
         member['roleName'] = item.role
       except:
         pass
-      data['household'].append(member)
-    return data
+      self.data['household'].append(member)
   def individual_as_data(self, obj):
     data = {"@type": "Person"}
     try:
