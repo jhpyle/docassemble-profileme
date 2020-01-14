@@ -28,7 +28,7 @@ class Profile(DAObject):
     for item in hh:
       member = self.individual_as_data(item)
       try:
-        member['roleName'] = item.role
+        member['roleName'] = item.relationship
       except:
         pass
       self.data['household'].append(member)
@@ -58,6 +58,26 @@ class Profile(DAObject):
       data['isVeteran'] = True if obj.is_veteran else False
     except:
       pass
+    try:
+      data['veteranStatus'] = obj.veteran_status
+    except:
+      pass
+    try:
+      data['language'] = obj.language
+    except:
+      pass
+    if hasattr(obj, 'address') and hasattr(obj.address, 'address'):
+      try:
+        data['address'] = {"@type": "PostalAddress"}
+        data['address']['addressLocality'] = obj.address.city
+        data['address']['addressRegion'] = obj.address.state
+        if hasattr(obj.address, 'zip'):
+          data['address']['postalCode'] = obj.address.zip
+        data['address']['streetAddress'] = obj.address.address
+        if hasattr(obj.address, 'unit'):
+          data['address']['addressUnit'] = obj.address.unit
+      except:
+        pass
     return data
   def populate_individual(self, obj, data):
     if 'givenName' in data:
@@ -73,6 +93,21 @@ class Profile(DAObject):
       obj.birthdate = as_datetime(data['birthDate'])
     if 'isVeteran' in data:
       obj.is_veteran = True if data['isVeteran'] else False
+    if 'veteranStatus' in data:
+      obj.veteran_status = data['veteranStatus']
+    if 'language' in data:
+      obj.language = data['language']
+    if 'address' in data:
+      if 'addressLocality' in data['address']:
+        obj.address.city = data['address']['addressLocality']
+      if 'addressRegion' in data['address']:
+        obj.address.state = data['address']['addressRegion']
+      if 'postalCode' in data['address']:
+        obj.address.zip = data['address']['postalCode']
+      if 'streetAddress' in data['address']:
+        obj.address.address = data['address']['streetAddress']
+      if 'addressUnit' in data['address']:
+        obj.address.unit = data['address']['addressUnit']
   def populate(self, obj, hh):
     self.populate_individual(obj, self.data)
     if 'household' in self.data:
@@ -81,5 +116,5 @@ class Profile(DAObject):
         member = hh.appendObject()
         self.populate_individual(member, item)
         if 'roleName' in item:
-          member.role = item['roleName']
+          member.relationship = item['roleName']
       hh.gathered = True
