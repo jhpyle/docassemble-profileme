@@ -1,0 +1,39 @@
+modules:
+  - .profile
+---
+objects:
+  - client: Individual
+  - profile: Profile
+---
+question: |
+  Upload your profile file.
+fields:
+  - File: profile_file
+    datatype: file
+---
+mandatory: True
+code: |
+  profile.import_from_file(profile_file)
+  profile.populate(client)
+  profile.export_to_server(client)
+---
+mandatory: True
+question: |
+  Your profile
+subquestion: |
+  Your name is ${ client }.
+  
+  You are ${ client.age_in_years() } years old.
+  
+  % if client.is_veteran:
+  You are a veteran.
+  % else:
+  You are not a veteran.
+  % endif
+  
+  Your household:
+  
+  % for member in client.household:
+  * ${ member }, who is ${ member.age_in_years() } years old.
+    Relationship is ${ member.role }.
+  % endfor
