@@ -18,6 +18,19 @@ fields:
     datatype: date
 ---
 question: |
+  What is your address?
+fields:
+  - Address: client.address.address
+    address autocomplete: True
+  - Unit: client.address.unit
+    required: False
+  - City: client.address.city
+  - State: client.address.state
+    code: |
+      states_list()
+  - Zip: client.address.zip
+---
+question: |
   Are you a veteran?
 yesno: client.is_veteran
 ---
@@ -35,7 +48,7 @@ fields:
   - Last name: household[i].name.last
   - Date of birth: household[i].birthdate
     datatype: date
-  - Relationship to you: household[i].role
+  - Relationship to you: household[i].relationship
     choices:
       - Child
       - Parent
@@ -55,6 +68,7 @@ yesno: household.there_is_another
 mandatory: True
 code: |
   client.name.first
+  client.address.address
   client.is_veteran
   household.gather()
   profile.update(client, household)
@@ -68,6 +82,8 @@ question: |
 subquestion: |
   Your name is ${ client }.
   
+  You live at ${ client.address.on_one_line(include_unit=True) }.
+  
   You are ${ client.age_in_years() } years old.
   
   % if client.is_veteran:
@@ -80,7 +96,7 @@ subquestion: |
   
   % for member in household:
   * ${ member }, who is ${ member.age_in_years() } years old.
-    Relationship is ${ member.role }.
+    Relationship is ${ member.relationship }.
   % endfor
   
   [Download](${ export_file.url_for() })

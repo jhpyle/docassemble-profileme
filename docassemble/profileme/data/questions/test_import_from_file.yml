@@ -24,6 +24,8 @@ question: |
 subquestion: |
   Your name is ${ client }.
   
+  You live at ${ client.address.on_one_line(include_unit=True) }.
+  
   You are ${ client.age_in_years() } years old.
   
   % if client.is_veteran:
@@ -36,5 +38,5 @@ subquestion: |
   
   % for member in household:
   * ${ member }, who is ${ member.age_in_years() } years old.
-    Relationship is ${ member.role }.
+    Relationship is ${ member.relationship }.
   % endfor
