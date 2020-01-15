@@ -1,3 +1,6 @@
+metadata:
+  title: Initiate a profile
+---
 modules:
   - .profile
 ---
@@ -6,6 +9,8 @@ objects:
   - household: DAList.using(object_type=Individual)
   - profile: Profile
   - export_file: DAFile
+  - image_file: DAFile
+  - base_image: DAStaticFile.using(filename="base_image.png")
 ---
 question: |
   Tell me about yourself.
@@ -75,6 +80,8 @@ code: |
   profile.export_to_server()
   export_file.initialize(filename="profile.json")
   export_file.write(profile.as_json())
+  image_file.initialize(filename="profile.png")
+  profile.write_image(base_image, image_file)
 ---
 mandatory: True
 question: |
@@ -99,4 +106,6 @@ subquestion: |
     Relationship is ${ member.relationship }.
   % endfor
   
-  [Download](${ export_file.url_for() })
+  ${ image_file }
+
+  [Download JSON](${ export_file.url_for() })
