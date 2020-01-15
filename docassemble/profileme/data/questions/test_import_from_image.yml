@@ -1,5 +1,5 @@
 metadata:
-  title: Import from server
+  title: Import from image
 ---
 modules:
   - .profile
@@ -8,18 +8,18 @@ objects:
   - client: Individual
   - household: DAList.using(object_type=Individual)
   - profile: Profile
-  - export_file: DAFile
-  - image_file: DAFile
-  - base_image: DAStaticFile.using(filename="base_image.png")
+---
+question: |
+  Upload your profile file.
+fields:
+  - File: profile_file
+    datatype: file
 ---
 mandatory: True
 code: |
-  profile.import_from_server()
+  profile.import_from_image(profile_file)
   profile.populate(client, household)
-  export_file.initialize(filename="profile.json")
-  export_file.write(profile.as_json())
-  image_file.initialize(filename="profile.png")
-  profile.write_image(base_image, image_file)
+  profile.export_to_server()
 ---
 mandatory: True
 question: |
@@ -43,7 +43,3 @@ subquestion: |
   * ${ member }, who is ${ member.age_in_years() } years old.
     Relationship is ${ member.relationship }.
   % endfor
-  
-  ${ image_file }
-  
-  [Download JSON](${ export_file.url_for() })

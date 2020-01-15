@@ -1,5 +1,6 @@
 from docassemble.base.util import as_datetime, DAObject, DAList, Individual, DAStore
 import json
+from stegano import lsb
 
 __all__ = ['Profile']
 
@@ -18,6 +19,12 @@ class Profile(DAObject):
   def import_from_file(self, file_obj):
     with open(file_obj.path(), 'r', encoding='utf-8') as fp:
       self.data = json.load(fp)
+  def write_image(self, base_image, final_image):
+    secret = lsb.hide(base_image.path(), self.as_json())
+    secret.save(final_image.path())
+    final_image.commit()
+  def import_from_image(self, file_obj):
+    self.import_from_json(lsb.reveal(file_obj.path()))
   def as_json(self):
     return json.dumps(self.as_data())
   def as_data(self):
