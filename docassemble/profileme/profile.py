@@ -1,6 +1,9 @@
 from docassemble.base.util import as_datetime, DAObject, DAList, Individual, DAStore
 import json
+<<<<<<< HEAD
 from stegano import lsb
+=======
+>>>>>>> quinten/master
 
 __all__ = ['Profile']
 
@@ -19,12 +22,15 @@ class Profile(DAObject):
   def import_from_file(self, file_obj):
     with open(file_obj.path(), 'r', encoding='utf-8') as fp:
       self.data = json.load(fp)
+<<<<<<< HEAD
   def write_image(self, base_image, final_image):
     secret = lsb.hide(base_image.path(), self.as_json())
     secret.save(final_image.path())
     final_image.commit()
   def import_from_image(self, file_obj):
     self.import_from_json(lsb.reveal(file_obj.path()))
+=======
+>>>>>>> quinten/master
   def as_json(self):
     return json.dumps(self.as_data())
   def as_data(self):
@@ -35,7 +41,11 @@ class Profile(DAObject):
     for item in hh:
       member = self.individual_as_data(item)
       try:
+<<<<<<< HEAD
         member['roleName'] = item.relationship
+=======
+        member['roleName'] = item.role
+>>>>>>> quinten/master
       except:
         pass
       self.data['household'].append(member)
@@ -65,6 +75,7 @@ class Profile(DAObject):
       data['isVeteran'] = True if obj.is_veteran else False
     except:
       pass
+<<<<<<< HEAD
     try:
       data['veteranStatus'] = obj.veteran_status
     except:
@@ -85,6 +96,8 @@ class Profile(DAObject):
           data['address']['addressUnit'] = obj.address.unit
       except:
         pass
+=======
+>>>>>>> quinten/master
     return data
   def populate_individual(self, obj, data):
     if 'givenName' in data:
@@ -100,6 +113,7 @@ class Profile(DAObject):
       obj.birthdate = as_datetime(data['birthDate'])
     if 'isVeteran' in data:
       obj.is_veteran = True if data['isVeteran'] else False
+<<<<<<< HEAD
     if 'veteranStatus' in data:
       obj.veteran_status = data['veteranStatus']
     if 'language' in data:
@@ -115,6 +129,8 @@ class Profile(DAObject):
         obj.address.address = data['address']['streetAddress']
       if 'addressUnit' in data['address']:
         obj.address.unit = data['address']['addressUnit']
+=======
+>>>>>>> quinten/master
   def populate(self, obj, hh):
     self.populate_individual(obj, self.data)
     if 'household' in self.data:
@@ -123,5 +139,9 @@ class Profile(DAObject):
         member = hh.appendObject()
         self.populate_individual(member, item)
         if 'roleName' in item:
+<<<<<<< HEAD
           member.relationship = item['roleName']
+=======
+          member.role = item['roleName']
+>>>>>>> quinten/master
       hh.gathered = True

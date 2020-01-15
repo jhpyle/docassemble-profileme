@@ -1,0 +1,165 @@
+---
+metadata:
+  title: |
+    Profile Me Demo
+---
+modules:
+  - .profile
+  - .utils
+  - .household
+  - docassemble.income.income  
+---
+mandatory: True
+code: |
+  menu_items = [action_menu_item(word('Update profileMe'), 'edit_profileMe')]
+---
+mandatory: True
+question: | 
+  Example starting screen
+event: starting
+---
+objects:
+  - user: Individual
+  - household: HouseholdList
+  - incomes: IncomeList
+  - profile: Profile
+  - export_file: DAFile
+---
+question: |
+  What is your name?
+fields:
+  - First: user.name.first
+  - Middle: user.name.middle
+    required: False
+  - Last: user.name.last
+    required: False
+  - Alternate name: user.name.alternate
+    required: False
+---
+question: |
+  Preferred Language
+fields:
+  - no label: user.language
+    choices:
+      - English
+      - Spanish
+      - French
+      - Chinese (Mandarin)
+      - Chinese (Cantonese)
+      - Portuguese
+      - Vietnamese
+      - Haitian Creole
+---
+question: |
+  Birthdate
+fields:
+  - Birthdate: user.birthdate
+    datatype: date
+---
+question: |
+  Veteran status
+subquestion: |
+  Are you a veteran or current member of the United States Military?
+yesno: user.is_veteran
+---
+question: |
+  Does anyone else live with you as part of your household?
+yesno: household.there_are_any
+---
+question: |
+  List everyone who is part of your household
+subquestion: |
+  Include your spouse, children and anyone else who
+  is part of your household. You do not need to include
+  roommates who you do not support.
+list collect: True
+fields:
+  - Name: household[i].name.first
+  - Birth date: household[i].birthdate
+    datatype: date
+  - Relationship: household[i].relationship
+    choices:
+      - Child: child
+      - Cousin: cousin
+      - Foster child: foster child
+      - Grandchild: grandchild
+      - Grandparent: grandparent
+      - Guardian: guardian 
+      - Parent: parent 
+      - Sibling: sibling 
+      - Spouse/Domestic partner: spouse 
+      - Step child: step child
+      - Step parent: step parent
+      - Unmarried partner: unmarried partner
+continue button field: edit_household_members
+---
+table: household.table
+rows: household
+columns:
+  - Name: |
+      row_item.name
+  - Birthdate: |
+      row_item.birthdate + " (Age: " + str(row_item.age_in_years()) + ")"
+  - Relationship to ${user}: |
+      row_item.relationship
+edit:
+  - name
+  - birthdate
+  - relationship
+---
+question: |
+  Information for ${user}
+fields:
+  - Name: household[i].name
+  - Birth date: household[i].birthdate
+    datatype: date
+  - Relationship: household[i].relationship
+    choices:
+      - Child: child
+      - Cousin: cousin
+      - Foster child: foster child
+      - Grandchild: grandchild
+      - Grandparent: grandparent
+      - Guardian: guardian 
+      - Parent: parent 
+      - Sibling: sibling 
+      - Spouse/Domestic partner: spouse 
+      - Step child: step child
+      - Step parent: step parent
+      - Unmarried partner: unmarried partner
+---
+question: |
+  Your profile
+subquestion: |
+  [CENTER]
+  [FILE profileMe_transparent.png, 25%]
+
+  ${action_button_html(str(export_file.url_for()), label='Download my data', icon="download")}
+  ${action_button_html(url_action('download'), label='Upload a data file')}
+
+  &nbsp; | &nbsp; | &nbsp;
+  -------|--------|--------
+  Name | ${user.name.full() if defined('user.name.first') else ''} | ${edit_link('user.name.first')}
+  Alternate Name | ${showifdef('user.name.alternate')} | ${edit_link('user.name.alternate')}
+  Veteran | ${showifdef('user.is_veteran')} | ${edit_link('user.is_veteran')}
+  Language | ${showifdef('user.language')} | ${edit_link('user.language')}
+  Date of Birth | ${showifdef('user.birthdate')} | ${edit_link('user.birthdate')}
+
+  #### Household members
+  % if defined('household'):
+  ${household.table}
+  % endif
+  ${household.add_action()}
+event: edit_profileMe
+---
+mandatory: True
+code: |
+  export_file.initialize(filename="profileMe.json")
+---
+reconsider: True
+code: |
+  profile.update(user, household)
+  export_file.write(profile.as_json())
+---
+code: | 
+  # test

@@ -54,6 +54,7 @@ fields:
   - Date of birth: household[i].birthdate
     datatype: date
   - Relationship to you: household[i].relationship
+  - Relationship to you: household[i].role
     choices:
       - Child
       - Parent
