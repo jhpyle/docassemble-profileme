@@ -1,13 +1,29 @@
 ---
+metadata:
+  title: |
+    Profile Me Demo
+---
 modules:
+  - .profile
   - .utils
   - .household
-  - docassemble.income.income
+  - docassemble.income.income  
+---
+mandatory: True
+code: |
+  menu_items = [action_menu_item(word('Update profileMe'), 'edit_profileMe')]
+---
+mandatory: True
+question: | 
+  Example starting screen
+event: starting
 ---
 objects:
   - user: Individual
   - household: HouseholdList
   - incomes: IncomeList
+  - profile: Profile
+  - export_file: DAFile
 ---
 question: |
   What is your name?
@@ -115,20 +131,35 @@ fields:
 question: |
   Your profile
 subquestion: |
-
   [CENTER]
   [FILE profileMe_transparent.png, 25%]
 
+  ${action_button_html(str(export_file.url_for()), label='Download my data', icon="download")}
+  ${action_button_html(url_action('download'), label='Upload a data file')}
+
   &nbsp; | &nbsp; | &nbsp;
-  --------|--------|--------
-  Name | ${user.name.full()} | ${edit_link('user.name.first')}
+  -------|--------|--------
+  Name | ${user.name.full() if defined('user.name.first') else ''} | ${edit_link('user.name.first')}
   Alternate Name | ${showifdef('user.name.alternate')} | ${edit_link('user.name.alternate')}
   Veteran | ${showifdef('user.is_veteran')} | ${edit_link('user.is_veteran')}
   Language | ${showifdef('user.language')} | ${edit_link('user.language')}
   Date of Birth | ${showifdef('user.birthdate')} | ${edit_link('user.birthdate')}
 
+  #### Household members
+  % if defined('household'):
   ${household.table}
+  % endif
   ${household.add_action()}
-
-  ${action_button_html(url_action('edit_household_members'), label="Add item") }
+event: edit_profileMe
+---
 mandatory: True
+code: |
+  export_file.initialize(filename="profileMe.json")
+---
+reconsider: True
+code: |
+  profile.update(user, household)
+  export_file.write(profile.as_json())
+---
+code: | 
+  # test
