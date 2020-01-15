@@ -43,7 +43,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.profileme',
-      version='0.0.3',
+      version='0.0.4',
       description=('profileMe is a universal user profile that can be shared across interviews and platforms.'),
       long_description='# docassemble.profileme\r\n\r\nThis is a **docassemble** extension package for implementing the profileMe\r\nstandard for representing a user profile.',
       long_description_content_type='text/markdown',
